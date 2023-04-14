@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 
-const API_KEY = "13a9817527mshaaf533c5b5d1a7bp1ee76djsn29f4b5a5792f";
+const API_KEY = "API_KEY";
 const headers = {
   'X-RapidAPI-Key': API_KEY, //! API KEY HERE
   'X-RapidAPI-Host': 'google-translate1.p.rapidapi.com',

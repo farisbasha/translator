@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_translate/flutter_translate.dart';
 import 'package:translator/controller/api.dart';
 
 class TranslatePage extends StatefulWidget {
@@ -24,8 +25,8 @@ class _TranslatePageState extends State<TranslatePage> {
   TextEditingController _textEditingController1 = TextEditingController();
   TextEditingController _textEditingController2 = TextEditingController();
 
-  String _selectedLanguage1 = "es";
-  String _selectedLanguage2 = "en";
+  String _sourceLang = "es";
+  String _targetLang = "en";
 
   void _showBottomSheet(Function onPressed) async {
     showModalBottomSheet(
@@ -55,6 +56,23 @@ class _TranslatePageState extends State<TranslatePage> {
         });
   }
 
+  Future<void> _translate() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final text = await Translate.getdata(
+        text: _textEditingController1.text,
+        sourceLang: _sourceLang,
+        targetLang: _targetLang);
+
+    _textEditingController2.text = text;
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,13 +89,14 @@ class _TranslatePageState extends State<TranslatePage> {
                 children: [
                   Row(
                     children: [
-                      Text("Language 1: $_selectedLanguage1"),
+                      Text("Source Lang: $_sourceLang"),
                       IconButton(
                         onPressed: () {
-                          _showBottomSheet((value) {
+                          _showBottomSheet((value) async {
                             setState(() {
-                              _selectedLanguage1 = value;
+                              _sourceLang = value;
                             });
+                            await _translate();
                           });
                         },
                         icon: Icon(Icons.arrow_drop_down),
@@ -86,13 +105,14 @@ class _TranslatePageState extends State<TranslatePage> {
                   ),
                   Row(
                     children: [
-                      Text("Language 2: $_selectedLanguage2"),
+                      Text("Target Lang: $_targetLang"),
                       IconButton(
                         onPressed: () {
-                          _showBottomSheet((value) {
+                          _showBottomSheet((value) async {
                             setState(() {
-                              _selectedLanguage2 = value;
+                              _targetLang = value;
                             });
+                            await _translate();
                           });
                         },
                         icon: Icon(Icons.arrow_drop_down),
@@ -103,45 +123,6 @@ class _TranslatePageState extends State<TranslatePage> {
               ),
             ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton(
-                onPressed: () async {
-                  setState(() {
-                    _isLoading = true;
-                  });
-                  final text = await Translate.getdata(
-                      text: _textEditingController1.text,
-                      sourceLang: _selectedLanguage1,
-                      targetLang: _selectedLanguage2);
-
-                  _textEditingController2.text = text;
-                  setState(() {
-                    _isLoading = false;
-                  });
-                },
-                child: Text("Translate 1 to 2"),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  setState(() {
-                    _isLoading = true;
-                  });
-                  final text = await Translate.getdata(
-                      text: _textEditingController2.text,
-                      sourceLang: _selectedLanguage2,
-                      targetLang: _selectedLanguage1);
-
-                  _textEditingController1.text = text;
-                  setState(() {
-                    _isLoading = false;
-                  });
-                },
-                child: Text("Translate 2 to 1"),
-              ),
-            ],
-          ),
           _isLoading
               ? Center(
                   child: CircularProgressIndicator(),
@@ -151,19 +132,23 @@ class _TranslatePageState extends State<TranslatePage> {
                     TextField(
                       controller: _textEditingController1,
                       decoration: InputDecoration(
-                        labelText: "Text 1",
+                        labelText: "Source",
                       ),
                     ),
                     SizedBox(height: 10),
                     TextField(
                       controller: _textEditingController2,
                       decoration: InputDecoration(
-                        labelText: "Text 2",
+                        labelText: "Target",
                       ),
                     ),
                   ],
                 ),
           SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: _translate,
+            child: Text("Translate"),
+          ),
         ],
       ),
     );
